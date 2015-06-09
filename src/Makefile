@@ -8,9 +8,11 @@
 PLAT= none
 
 CC= gcc
-CFLAGS= -O2 -Wall $(MYCFLAGS)
+#CFLAGS= -O2 -Wall $(MYCFLAGS)
+CFLAGS= -O0 -g -Wall $(MYCFLAGS)
 AR= ar rcu
 RANLIB= ranlib
+DYLIB= g++ -dynamiclib -compatibility_version 5.1.0 -current_version 5.1.5 -undefined suppress -flat_namespace -o
 RM= rm -f
 LIBS= -lm $(MYLIBS)
 
@@ -23,6 +25,7 @@ MYLIBS=
 PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
 
 LUA_A=	liblua.a
+LUA_DY=	liblua.dylib
 CORE_O=	lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o \
 	lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o  \
 	lundump.o lvm.o lzio.o
@@ -36,8 +39,8 @@ LUAC_T=	luac
 LUAC_O=	luac.o print.o
 
 ALL_O= $(CORE_O) $(LIB_O) $(LUA_O) $(LUAC_O)
-ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
-ALL_A= $(LUA_A)
+ALL_T= $(LUA_A) $(LUA_DY) $(LUA_T) $(LUAC_T)
+ALL_A= $(LUA_A) $(LUA_DY)
 
 default: $(PLAT)
 
@@ -50,6 +53,9 @@ a:	$(ALL_A)
 $(LUA_A): $(CORE_O) $(LIB_O)
 	$(AR) $@ $(CORE_O) $(LIB_O)	# DLL needs all object files
 	$(RANLIB) $@
+
+$(LUA_DY): $(CORE_O) $(LIB_O)
+	$(DYLIB) $@ $(CORE_O) $(LIB_O)
 
 $(LUA_T): $(LUA_O) $(LUA_A)
 	$(CC) -o $@ $(MYLDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)

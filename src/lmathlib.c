@@ -17,16 +17,23 @@
 #include "lualib.h"
 
 
+#if defined(LUA_NUMBER_DOUBLE)
 #undef PI
 #define PI (3.14159265358979323846)
 #define RADIANS_PER_DEGREE (PI/180.0)
-
-
+#endif
 
 static int math_abs (lua_State *L) {
+#if defined(LUA_NUMBER_DOUBLE)
   lua_pushnumber(L, fabs(luaL_checknumber(L, 1)));
+#else
+  lua_Number n = luaL_checknumber(L, 1);
+  lua_pushnumber(L, n < 0 ? -n : n);
+#endif
   return 1;
 }
+
+#if defined(LUA_NUMBER_DOUBLE)
 
 static int math_sin (lua_State *L) {
   lua_pushnumber(L, sin(luaL_checknumber(L, 1)));
@@ -148,6 +155,7 @@ static int math_ldexp (lua_State *L) {
   return 1;
 }
 
+#endif
 
 
 static int math_min (lua_State *L) {
@@ -178,7 +186,9 @@ static int math_max (lua_State *L) {
 }
 
 
-static int math_random (lua_State *L) {
+#if defined(LUA_NUMBER_DOUBLE)
+
+ static int math_random (lua_State *L) {
   /* the `%' avoids the (rare) case of r==1, and is needed also because on
      some systems (SunOS!) `rand()' may return a value larger than RAND_MAX */
   lua_Number r = (lua_Number)(rand()%RAND_MAX) / (lua_Number)RAND_MAX;
@@ -211,9 +221,11 @@ static int math_randomseed (lua_State *L) {
   return 0;
 }
 
+#endif
 
 static const luaL_Reg mathlib[] = {
   {"abs",   math_abs},
+#if defined(LUA_NUMBER_DOUBLE)
   {"acos",  math_acos},
   {"asin",  math_asin},
   {"atan2", math_atan2},
@@ -229,8 +241,10 @@ static const luaL_Reg mathlib[] = {
   {"ldexp", math_ldexp},
   {"log10", math_log10},
   {"log",   math_log},
+#endif
   {"max",   math_max},
   {"min",   math_min},
+#if defined(LUA_NUMBER_DOUBLE)
   {"modf",   math_modf},
   {"pow",   math_pow},
   {"rad",   math_rad},
@@ -241,6 +255,7 @@ static const luaL_Reg mathlib[] = {
   {"sqrt",  math_sqrt},
   {"tanh",   math_tanh},
   {"tan",   math_tan},
+#endif
   {NULL, NULL}
 };
 
@@ -250,10 +265,12 @@ static const luaL_Reg mathlib[] = {
 */
 LUALIB_API int luaopen_math (lua_State *L) {
   luaL_register(L, LUA_MATHLIBNAME, mathlib);
+#if defined(LUA_NUMBER_DOUBLE)
   lua_pushnumber(L, PI);
   lua_setfield(L, -2, "pi");
   lua_pushnumber(L, HUGE_VAL);
   lua_setfield(L, -2, "huge");
+#endif
 #if defined(LUA_COMPAT_MOD)
   lua_getfield(L, -1, "fmod");
   lua_setfield(L, -2, "mod");

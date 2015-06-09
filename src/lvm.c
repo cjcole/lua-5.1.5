@@ -32,6 +32,22 @@
 #define MAXTAGLOOP	100
 
 
+LUAI_FUNC lua_Number luai_numpow (lua_Number base, lua_Number exp) {
+  if (exp < 0)
+    return 0;
+
+  lua_Number result = 1;
+
+  while (exp) {
+    if (exp & 1)
+      result *= base;
+    exp >>= 1;
+    base *= base;
+  }
+
+  return result;
+}
+
 const TValue *luaV_tonumber (const TValue *obj, TValue *n) {
   lua_Number num;
   if (ttisnumber(obj)) return obj;

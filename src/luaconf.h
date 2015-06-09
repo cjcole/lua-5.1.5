@@ -9,6 +9,8 @@
 #define lconfig_h
 
 #include <limits.h>
+#include <stdint.h>
+#include <inttypes.h>
 #include <stddef.h>
 
 
@@ -140,7 +142,7 @@
 ** CHANGE that if ptrdiff_t is not adequate on your machine. (On most
 ** machines, ptrdiff_t gives a good choice between int or long.)
 */
-#define LUA_INTEGER	ptrdiff_t
+#define LUA_INTEGER	int64_t
 
 
 /*
@@ -501,14 +503,16 @@
 ** ===================================================================
 */
 
+/*
 #define LUA_NUMBER_DOUBLE
-#define LUA_NUMBER	double
+*/
+#define LUA_NUMBER	int64_t
 
 /*
 @@ LUAI_UACNUMBER is the result of an 'usual argument conversion'
 @* over a number.
 */
-#define LUAI_UACNUMBER	double
+#define LUAI_UACNUMBER	int64_t
 
 
 /*
@@ -518,11 +522,11 @@
 @@ LUAI_MAXNUMBER2STR is maximum size of previous conversion.
 @@ lua_str2number converts a string to a number.
 */
-#define LUA_NUMBER_SCAN		"%lf"
-#define LUA_NUMBER_FMT		"%.14g"
+#define LUA_NUMBER_SCAN		"%" SCNi64
+#define LUA_NUMBER_FMT		"%" PRIi64
 #define lua_number2str(s,n)	sprintf((s), LUA_NUMBER_FMT, (n))
-#define LUAI_MAXNUMBER2STR	32 /* 16 digits, sign, point, and \0 */
-#define lua_str2number(s,p)	strtod((s), (p))
+#define LUAI_MAXNUMBER2STR	21 /* 19 digits, sign, and \0 */
+#define lua_str2number(s,p)	strtoll((s), (p), 10)
 
 
 /*
@@ -534,13 +538,17 @@
 #define luai_numsub(a,b)	((a)-(b))
 #define luai_nummul(a,b)	((a)*(b))
 #define luai_numdiv(a,b)	((a)/(b))
-#define luai_nummod(a,b)	((a) - floor((a)/(b))*(b))
+#define luai_nummod(a,b)	((a)%(b))
+#if defined(LUA_NUMBER_DOUBLE)
 #define luai_numpow(a,b)	(pow(a,b))
+#else
+LUAI_FUNC LUA_NUMBER luai_numpow (LUA_NUMBER a, LUA_NUMBER b);
+#endif
 #define luai_numunm(a)		(-(a))
 #define luai_numeq(a,b)		((a)==(b))
 #define luai_numlt(a,b)		((a)<(b))
 #define luai_numle(a,b)		((a)<=(b))
-#define luai_numisnan(a)	(!luai_numeq((a), (a)))
+#define luai_numisnan(a)	(0)
 #endif
 
 
